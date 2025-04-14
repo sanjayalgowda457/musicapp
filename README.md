@@ -1,6 +1,6 @@
 # Music Subscription Web Application (AWS Cloud-Based)
-Duration: Mar 2025 – Apr 2025
-Tech Stack: AWS EC2, S3, Lambda, API Gateway, DynamoDB, HTML, CSS, JavaScript, Python, Regex (NLP)
+ * Duration: Mar 2025 – Apr 2025
+ * Tech Stack: AWS EC2, S3, Lambda, API Gateway, DynamoDB, HTML, CSS, JavaScript, Python, Regex (NLP)
 
 Designed and deployed a fully cloud-based music subscription web application hosted on an AWS EC2 instance. The platform allows users to register, search, and subscribe to music tracks, featuring secure login, personalized subscription management, and seamless image handling from S3.
 
