@@ -1,5 +1,4 @@
 # Music Subscription Web Application (AWS Cloud-Based)
-Course Project – RMIT University | COSC2626/2640: Cloud Computing
 Duration: Mar 2025 – Apr 2025
 Tech Stack: AWS EC2, S3, Lambda, API Gateway, DynamoDB, HTML, CSS, JavaScript, Python, Regex (NLP)
 
