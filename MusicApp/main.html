@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gana Music | Dashboard</title>
+
+  <!-- Load custom Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+
+  <style>
+    /* General Reset and Base Styles */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100vh;
+      background: url('https://plus.unsplash.com/premium_photo-1708589334678-1499e081707d?w=700&auto=format&fit=crop&q=60') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Montserrat', sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Overlay layer to darken background image */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 0;
+    }
+
+    /* Navigation Bar Styles */
+    .navbar {
+      background: rgba(126, 87, 194, 0.9);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .navbar h1 { margin: 0; font-size: 22px; }
+    .navbar a { color: white; text-decoration: none; font-weight: bold; }
+
+    /* Main Container */
+    .container {
+      flex: 1;
+      display: flex;
+      gap: 30px;
+      padding: 30px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Side Panel Styles */
+    .left-section, .right-section {
+      background-color: rgba(28, 28, 28, 0.85);
+      padding: 25px;
+      border-radius: 20px;
+      overflow-y: auto;
+      height: calc(100vh - 120px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .left-section { flex: 1; }
+    .right-section { flex: 2; }
+
+    /* Titles for each section */
+    .section-title {
+      font-size: 20px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #333;
+      padding-bottom: 10px;
+    }
+
+    /* Song Card Styles */
+    .card {
+      background-color: rgba(40, 40, 40, 0.95);
+      border-radius: 14px;
+      margin-bottom: 20px;
+      padding: 15px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover { transform: scale(1.02); }
+
+    .card img {
+      width: 70px;
+      height: 70px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .card-info { flex: 1; }
+
+    /* Text size tweaks */
+    .left-section .card-info strong { font-size: 13px; }
+    .right-section .card-info strong { font-size: 16px; }
+
+    /* Button styling inside cards */
+    .card button {
+      background-color: #7e57c2;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 25px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .card button:hover { background-color: #a879d4; }
+
+    /* Form input fields */
+    .form-section input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      background-color: #2a2a2a;
+      color: white;
+    }
+
+    .form-section button {
+      background-color: #7e57c2;
+      padding: 14px;
+      width: 100%;
+      border: none;
+      border-radius: 30px;
+      color: white;
+      font-weight: bold;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .form-section button:hover { background-color: #a879d4; }
+
+    /* Message for errors or no results */
+    .no-results {
+      color: #ff4d4d;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    /* Loading Spinner Animation */
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #7e57c2;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Top Navigation Bar -->
+  <div class="navbar">
+    <h1 id="userGreeting">Welcome</h1>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <!-- Main Application Layout -->
+  <div class="container">
+    <!-- Left Section: User Subscriptions -->
+    <div class="left-section">
+      <div class="section-title">Your Subscriptions</div>
+      <div id="subscriptionsContainer">Loading...</div>
+    </div>
+
+    <!-- Right Section: Music Querying -->
+    <div class="right-section">
+      <div class="section-title">Search Music</div>
+
+      <!-- Form to Query Music by Fields -->
+      <form id="queryForm" class="form-section">
+        <input type="text" id="title" placeholder="Title">
+        <input type="text" id="year" placeholder="Year">
+        <input type="text" id="artist" placeholder="Artist">
+        <input type="text" id="album" placeholder="Album">
+        <button type="submit">Query</button>
+      </form>
+      <div class="spinner" id="querySpinner"></div>
+
+      <!-- Natural Language Query Section -->
+      <div class="section-title" style="margin-top: 30px;">Search for a Song</div>
+      <form id="nlpQueryForm" class="form-section">
+        <input type="text" id="nlpQuery" placeholder="Write here to query...">
+        <button type="submit">Ask</button>
+      </form>
+      <div class="spinner" id="nlpSpinner"></div>
+
+      <!-- Display Area for Results and Messages -->
+      <p class="no-results" id="queryMsg"></p>
+      <div id="queryResults"></div>
+    </div>
+  </div>
+
+  <script>
+    // Retrieve session info from localStorage
+    const email = localStorage.getItem("email");
+    const userName = localStorage.getItem("user_name");
+
+    // Redirect to login if session is missing
+    if (!email || !userName) {
+      alert("Session expired. Please log in again.");
+      window.location.replace("login.html");
+    }
+
+    // Set welcome message
+    document.getElementById("userGreeting").innerText = "Welcome, " + userName;
+
+    // Force reload on browser back navigation to avoid stale session
+    window.onpageshow = function(event) {
+      if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+        window.location.reload();
+      }
+    };
+
+    // Clears local storage and logs out
+    function logout() {
+      localStorage.clear();
+      window.location.replace("login.html");
+    }
+
+    // Loads user's subscriptions from Lambda API
+    async function loadSubscriptions() {
+      const container = document.getElementById("subscriptionsContainer");
+      try {
+        const res = await fetch(`https://kizkewy4zb.execute-api.us-east-1.amazonaws.com/default/lambda_get_subscriptions?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+
+        if (res.status !== 200) {
+          container.innerHTML = `<p>Error: ${data.error}</p>`;
+          return;
+        }
+
+        if (!data.subscriptions || data.subscriptions.length === 0) {
+          container.innerHTML = "<p>You have not subscribed to any songs yet.</p>";
+          return;
+        }
+
+        // Render each subscribed song
+        container.innerHTML = "";
+        data.subscriptions.forEach(song => {
+          const imageUrl = song.image_url || "";
+          container.innerHTML += `
+            <div class="card">
+              <img src="${imageUrl}" alt="${song.artist} - Album Art" onerror="this.src='default.jpg'">
+              <div class="card-info">
+                <strong>${song.title}</strong><br>
+                ${song.artist} — ${song.album} (${song.year})
+              </div>
+              <button onclick="removeSubscription('${song.title.replace(/'/g, "\\'")}', '${song.artist.replace(/'/g, "\\'")}')">Remove</button>
+            </div>`;
+        });
+      } catch (error) {
+        container.innerHTML = `<p>Error loading subscriptions: ${error.message}</p>`;
+      }
+    }
+
+    // Removes a song from subscriptions via API
+    async function removeSubscription(title, artist) {
+      try {
+        const res = await fetch("https://kizkewy4zb.execute-api.us-east-1.amazonaws.com/default/lambda_remove_subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, title, artist })
+        });
+
+        const data = await res.json();
+        if (res.status === 200) {
+          alert("Removed successfully!");
+          loadSubscriptions();
+        } else {
+          alert("Failed to remove: " + data.error);
+        }
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    }
+
+    // Form handler for structured query
+    document.getElementById("queryForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById("title").value.trim();
+      const year = document.getElementById("year").value.trim();
+      const artist = document.getElementById("artist").value.trim();
+      const album = document.getElementById("album").value.trim();
+      const spinner = document.getElementById("querySpinner");
+      const resultArea = document.getElementById("queryResults");
+
+      if (!title && !year && !artist && !album) {
+        document.getElementById("queryMsg").innerText = "Please enter at least one field";
+        return;
+      }
+
+      spinner.style.display = "block";
+      resultArea.innerHTML = "";
+      document.getElementById("queryMsg").innerText = "";
+
+      try {
+        const res = await fetch("https://kizkewy4zb.execute-api.us-east-1.amazonaws.com/default/lambda_query_music", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, year, artist, album })
+        });
+
+        const data = await res.json();
+        spinner.style.display = "none";
+
+        if (res.status !== 200 || !data.results || data.results.length === 0) {
+          document.getElementById("queryMsg").innerText = "No result is retrieved. Please query again.";
+          return;
+        }
+
+        data.results.forEach(song => renderSongCard(song));
+      } catch (error) {
+        spinner.style.display = "none";
+        document.getElementById("queryMsg").innerText = "Error: " + error.message;
+      }
+    });
+
+    // Form handler for natural language query
+    document.getElementById("nlpQueryForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const queryText = document.getElementById("nlpQuery").value.trim();
+      const spinner = document.getElementById("nlpSpinner");
+      const resultArea = document.getElementById("queryResults");
+
+      if (!queryText) {
+        document.getElementById("queryMsg").innerText = "Please enter a query.";
+        return;
+      }
+
+      spinner.style.display = "block";
+      document.getElementById("queryMsg").innerText = "";
+      resultArea.innerHTML = "";
+
+      try {
+        const res = await fetch("https://kizkewy4zb.execute-api.us-east-1.amazonaws.com/default/lambda_nlp_query_music", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: queryText })
+        });
+
+        const data = await res.json();
+        spinner.style.display = "none";
+
+        if (res.status !== 200 || !data.results || data.results.length === 0) {
+          document.getElementById("queryMsg").innerText = "No result is retrieved. Please query again";
+          return;
+        }
+
+        data.results.forEach(song => renderSongCard(song));
+      } catch (error) {
+        spinner.style.display = "none";
+        document.getElementById("queryMsg").innerText = "Error: " + error.message;
+      }
+    });
+
+    // Renders a song result card with a Subscribe button
+    function renderSongCard(song) {
+      const imageUrl = song.image_url || "";
+      const songData = {
+        title: song.title,
+        artist: song.artist,
+        album: song.album,
+        year: song.year,
+        image_url: imageUrl
+      };
+
+      document.getElementById("queryResults").innerHTML += `
+        <div class="card">
+          <img src="${imageUrl}" alt="${song.artist} - Album Art" onerror="this.src='default.jpg'">
+          <div class="card-info">
+            <strong>${song.title}</strong><br>
+            ${song.artist} — ${song.album} (${song.year})
+          </div>
+          <button data-song='${JSON.stringify(songData).replace(/'/g, "\\'")}' onclick="subscribeSongFromData(this)">Subscribe</button>
+        </div>`;
+    }
+
+    // Helper function to parse and subscribe song
+    function subscribeSongFromData(buttonElement) {
+      const songData = JSON.parse(buttonElement.getAttribute('data-song'));
+      subscribeSong(songData.title, songData.artist, songData.album, songData.year, songData.image_url);
+    }
+
+    // Call subscribe API for the selected song
+    async function subscribeSong(title, artist, album, year, image_url) {
+      const spinner = document.getElementById("querySpinner");
+      spinner.style.display = "block";
+
+      try {
+        const res = await fetch("https://kizkewy4zb.execute-api.us-east-1.amazonaws.com/default/lambda_subscribe_song", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, title, artist, album, year, image_url })
+        });
+
+        const data = await res.json();
+        if (res.status === 200) {
+          alert("Subscribed successfully!");
+          loadSubscriptions();
+        } else if (res.status === 409) {
+          alert("You are already subscribed to this song.");
+        } else {
+          alert("Subscription failed: " + data.error);
+        }
+      } catch (error) {
+        alert("Error: " + error.message);
+      } finally {
+        spinner.style.display = "none";
+      }
+    }
+
+    // Load subscriptions when the page loads
+    window.onload = function () {
+      loadSubscriptions();
+    };
+  </script>
+</body>
+</html>
